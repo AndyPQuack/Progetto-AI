@@ -1,0 +1,158 @@
+---
+title: "report_AI"
+author: "Andrea Pasquali"
+date: "2026-05-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Classificazione della spazzatura usando l'AI
+
+Per il secondo progetto del corso di Programmazione Avanzata ho scelto di affrontare una delle task più classiche quando si deve sviluppare un modello AI from scratch e valutarne le prestazioni: il riconoscimento e la classificazione automatizzata delle immagini.
+
+In particolare, per svolgere questo compito ho scelto il problema della classificazione dei rifiuti, una sfida tecnica cruciale per l'ottimizzazione e l'automazione dei futuri processi di riciclo. Come dataset ho scelto il noto TrashNet, che raccoglie e suddivide le immagini in sei categorie distinte (rimando all'apposito capitolo per un maggiore approfondimento).
+
+## Spiegazione della task
+
+Per portare a termine il compito ho intenzione di suddividere il lavoro in quattro fasi essenziali:
+
+-Analisi e Pre-processing dei Dati: Esplorazione del dataset originale e applicazione di tecniche di Data Augmentation per irrobustire il modello.
+
+-Sviluppo di un Modello Convoluzionale "from scratch": Creazione ed addestramento da zero di una Rete Neurale Convoluzionale (CNN) proprietaria.
+
+-Transfer Learning: Utilizzo di un modello pre-addestrato di livello industriale (ResNet18), riadattando gli ultimi livelli decisionali per la task specifica del progetto.
+
+-Valutazione e Diagnostica Comparativa: Confronto delle performance dei due modelli analizzandone criticità e punti di forza.
+
+## Scelta e preparazione del Dataset
+
+Il successo nell'addestramento di una Rete Neurale Convoluzionale dipende profondamente dalla qualità e dalla formattazione dei dati in ingresso.
+
+Il dataset scelto è composto da immagini suddivise in 6 classi di materiali: cartone (cardboard), vetro (glass), metallo (metal), carta (paper), plastica (plastic) e materiale indifferenziato (trash).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(jpeg)
+
+cartella <- "dataset-resized"
+classi <- list.dirs(cartella, full.names = FALSE, recursive = FALSE)
+
+par(mfrow = c(2, 3), mar = c(0.5, 0.5, 2, 0.5))
+
+for (cl in classi) {
+  file_foto <- list.files(file.path(cartella, cl), full.names = TRUE)[1]
+  img <- readJPEG(file_foto)
+  plot(1, type = "n", xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "", main = cl)
+  rasterImage(img, 0, 0, 1, 1)
+}
+```
+
+Le fotografie sono state scattate in un ambiente controllato, posizionando i singoli oggetti su uno sfondo bianco neutro. Per garantire una buona variabilità e simulare condizioni realistiche, gli oggetti sono stati immortalati in diverse pose, angolazioni e stati di usura (ad esempio, lattine schiacciate o fogli di carta stropicciati).
+
+Tuttavia, l'utilizzo "grezzo" di questo dataset presentava diverse criticità tecniche che avrebbero compromesso l'apprendimento della rete. È stata quindi sviluppato ono script python (data_processing.py) per risolvere i problemi fondamentali.
+
+-Gestione delle dimensioni e del formato
+
+Le immagini originali del dataset TrashNet presentano una forma rettangolare e dimensioni non standardizzate. Poiché le architetture convoluzionali moderne (e in particolare la ResNet18) richiedono in ingresso tensori quadrati di dimensioni fisse, è stato necessario uniformare il formato applicando un ritaglio centrale per rimuovere i bordi superflui e isolare l'oggetto e un ridimensionamento finale per ottenere la risoluzione esatta richiesta dalla rete (224x224).
+
+-Creazione del Train Set e Test Set
+
+Il dataset viene fornito come un'unica grande raccolta di immagini, priva di una suddivisione predefinita tra dati di addestramento e dati di validazione. Per poter valutare oggettivamente le prestazioni del modello su dati "mai visti", è stata implementata una suddivisione rigorosa dell'80% per il training e del 20% per il test. Fondamentale in questa fase è stato l'utilizzo di una suddivisione stratificata (stratify). Questa tecnica garantisce che la proporzione originale di ogni classe venga mantenuta intatta in entrambi i sottoinsiemi, evitando il rischio che classi rare finiscano interamente nel set di addestramento o in quello di test.
+
+-Risoluzione dello sbilanciamento delle classi (Oversampling)
+
+L'ostacolo più critico riscontrato durante l'esplorazione esplorazione dei dati è stato il forte sbilanciamento delle classi (es. molte immagini di carta e cartone, ma pochissime di plastica o trash). Allenare una rete su dati sbilanciati porterebbe il modello a favorire statisticamente la classe maggioritaria, ignorando quelle minoritarie. Invece di eliminare immagini (perdendo informazioni preziose), si è scelto di risolvere il problema dinamicamente durante il training:
+
+È stata calcolata la frequenza di ogni classe nel Train Set.
+
+A ogni immagine è stato assegnato un "peso" matematico inversamente proporzionale alla frequenza della sua classe (classi rare ottengono un peso maggiore).
+
+È stato utilizzato un estrattore bilanciato (WeightedRandomSampler con reinserimento).
+
+Durante l'addestramento, il sistema "pesca" i dati in modo truccato, estraendo più volte le immagini delle classi rare fino a pareggiare numericamente quelle delle classi abbondanti.
+
+-Data Augmentation e Normalizzazione Per evitare che la rete memorizzasse a memoria le immagini ripetute a causa dell'Oversampling (fenomeno di Overfitting), sono state applicate tecniche di Data Augmentation esclusivamente al set di addestramento. Durante il caricamento, le immagini subiscono trasformazioni casuali: capovolgimenti orizzontali (con probabilità del 50%) e rotazioni casuali fino a 15 gradi. In questo modo, la rete vede varianti sempre nuove dello stesso oggetto.
+
+Infine, come ultimo passaggio, i valori dei pixel (originariamente da 0 a 255) sono stati convertiti in tensori (0-1) e normalizzati.
+
+## Implementazione del mio modello convoluzionale
+
+```{python, eval=FALSE, echo=TRUE, python.reticulate=FALSE}
+
+import torch
+import numpy as np
+import matplotlib
+
+```
+
+\*\* completa \*\*
+
+### Training e analisi dei risultati
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
+dati1 <- read.csv("CNN.csv")
+par(mfrow = c(1, 2), mar = c(4, 4, 3, 2))
+plot(dati1$Epoca, dati1$Loss_Train, type = "l", col = "firebrick", lwd = 2, 
+     xlab = "Epoche", ylab = "Loss", main = "Andamento della Loss")
+plot(dati1$Epoca, dati1$Accuracy_Train, type = "l", col = "steelblue", lwd = 2, 
+     xlab = "Epoche", ylab = "Accuratezza (%)", main = "Andamento dell'Accuratezza")
+
+```
+
+```{r, echo=FALSE, fig.align='center', out.width='80%'}
+knitr::include_graphics("matrice_confusione_cnn.png")
+```
+
+```{r}
+risultati <- read.csv("risultati_test.csv")
+risultati$Accuratezza_Test[1]
+```
+
+## Trainig di un modello già disponibile su pytorch
+
+### Analisi dei risultati
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
+dati2 <- read.csv("resnet.csv")
+par(mfrow = c(1, 2), mar = c(4, 4, 3, 2))
+plot(dati2$Epoca, dati2$Loss_Train, type = "l", col = "firebrick", lwd = 2, 
+     xlab = "Epoche", ylab = "Loss", main = "Andamento della Loss")
+plot(dati2$Epoca, dati2$Accuracy_Train, type = "l", col = "steelblue", lwd = 2, 
+     xlab = "Epoche", ylab = "Accuratezza (%)", main = "Andamento dell'Accuratezza")
+
+```
+
+```{r, echo=FALSE, fig.align='center', out.width='80%'}
+knitr::include_graphics("matrice_confusione_resnet.png")
+```
+
+```{r}
+risultati <- read.csv("risultati_test.csv")
+risultati$Accuratezza_Test[2]
+```
+
+## Confronto tra i due modelli
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
+par(mfrow = c(1, 2), mar = c(4, 4, 3, 2))
+
+ylim_loss <- range(c(dati1$Loss_Train, dati2$Loss_Train), na.rm = TRUE)
+plot(dati1$Epoca, dati1$Loss_Train, type = "l", col = "steelblue", lwd = 2, 
+     xlab = "Epoche", ylab = "Loss", main = "Confronto Loss", ylim = ylim_loss)
+lines(dati2$Epoca, dati2$Loss_Train, col = "firebrick", lwd = 2)
+legend("topright", legend = c("CNN", "ResNet"), col = c("steelblue", "firebrick"), 
+       lty = 1, lwd = 2, bty = "n")
+
+ylim_acc <- range(c(dati1$Accuracy_Train, dati2$Accuracy_Train), na.rm = TRUE)
+plot(dati1$Epoca, dati1$Accuracy_Train, type = "l", col = "steelblue", lwd = 2, 
+     xlab = "Epoche", ylab = "Accuratezza (%)", main = "Confronto Accuratezza", ylim = ylim_acc)
+lines(dati2$Epoca, dati2$Accuracy_Train, col = "firebrick", lwd = 2)
+legend("bottomright", legend = c("CNN", "ResNet"), col = c("steelblue", "firebrick"), 
+       lty = 1, lwd = 2, bty = "n")
+
+
+```
+
+## Miglioramenti al mio modello

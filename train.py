@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import csv
+import os
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Subset, WeightedRandomSampler
 from sklearn.model_selection import train_test_split
@@ -69,6 +71,13 @@ def main():
 
     epoche = 10
 
+    nome_file_csv = 'CNN.csv' 
+
+
+    with open(nome_file_csv, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Epoca', 'Loss_Train', 'Accuracy_Train'])
+
     for epoca in range(epoche):
         modello.train()
         loss_totale = 0.0
@@ -97,6 +106,10 @@ def main():
         print(f"\nDistribuzione classi pescate nell'epoca {epoca+1}: {conteggio_pescate.cpu().tolist()}")
         print(f"Epoca [{epoca+1}/{epoche}] | Loss: {loss_totale/len(train_loader):.4f} | Accuratezza Train: {accuratezza_train:.2f}%")
 
+        with open(nome_file_csv, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([epoca + 1, round(loss_totale/len(train_loader), 4), round(accuratezza_train, 2)])
+
     print("\n--- INIZIO VALUTAZIONE SUL TEST SET ---")
     modello.eval()
     corretti_test = 0
@@ -112,6 +125,16 @@ def main():
 
     accuratezza_finale = 100 * corretti_test / totale_test
     print(f"Accuratezza Finale sul Test Set: {accuratezza_finale:.2f}%")
+
+    nome_file_test = 'risultati_test.csv'
+    file_esiste = os.path.isfile(nome_file_test)
+
+    with open(nome_file_test, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_esiste:
+            writer.writerow(['Modello', 'Accuratezza_Test'])
+        
+        writer.writerow(['CNN Custom', round(accuratezza_finale, 2)])
 
     torch.save(modello.state_dict(), 'modello_trashnet.pth')
     print("Modello salvato con successo!")

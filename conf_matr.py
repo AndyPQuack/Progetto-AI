@@ -5,6 +5,8 @@ from torch.utils.data import DataLoader, Subset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 CARTELLA_DATI = 'dataset-resized'
@@ -60,7 +62,9 @@ def main():
     plt.ylabel('Classe Reale', fontsize=12)
     plt.xlabel('Classe Predetta', fontsize=12)
     plt.tight_layout()
-    plt.show()
+    nome_immagine = f"matrice_confusione_{TIPO_MODELLO}.png"
+    plt.savefig(nome_immagine, dpi=300, bbox_inches='tight') # dpi=300 garantisce alta qualità
+    print(f"Grafico salvato con successo come immagine: {nome_immagine}")
 
 if __name__ == '__main__':
     main()
