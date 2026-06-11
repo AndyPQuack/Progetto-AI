@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 from CNN import TrashNetCNN
 
-def get_data_loaders(data_dir, batch_size=32):
+def get_data_loaders(data_dir, batch_size=256):
     train_transforms = transforms.Compose([
         transforms.CenterCrop(384),
         transforms.Resize((224, 224)),
@@ -46,7 +46,7 @@ def get_data_loaders(data_dir, batch_size=32):
     pesi_campioni = torch.DoubleTensor(pesi_campioni)
 
     max_campioni = max(conteggio_classi.values())
-    totale_campioni = max_campioni * 6
+    totale_campioni = max_campioni * 6 * 3
 
     campionatore_bilanciato = WeightedRandomSampler(
         weights=pesi_campioni,
@@ -54,8 +54,25 @@ def get_data_loaders(data_dir, batch_size=32):
         replacement=True
     )
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=campionatore_bilanciato)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    usa_gpu = torch.cuda.is_available()
+    
+    workers = 4 if usa_gpu else 2
+
+    train_loader = DataLoader(
+        train_dataset, 
+        batch_size=batch_size, 
+        sampler=campionatore_bilanciato, 
+        num_workers=workers, 
+        pin_memory=usa_gpu
+    )
+    
+    test_loader = DataLoader(
+        test_dataset, 
+        batch_size=batch_size, 
+        shuffle=False, 
+        num_workers=workers, 
+        pin_memory=usa_gpu
+    )
 
     return train_loader, test_loader
 
