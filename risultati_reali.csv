@@ -1,22 +1,22 @@
 Immagine,Modello,Predizione,Confidenza
 bomboletta (2).jpg,CNN Base,GLASS,49.9%
 bomboletta (2).jpg,CNN EMP,PAPER,40.4%
-bomboletta (2).jpg,ResNet18,TRASH,37.9%
+bomboletta (2).jpg,ResNet18,TRASH,38.0%
 bomboletta.jpg,CNN Base,TRASH,27.5%
 bomboletta.jpg,CNN EMP,TRASH,87.2%
 bomboletta.jpg,ResNet18,METAL,68.4%
 bustine.jpg,CNN Base,METAL,51.0%
 bustine.jpg,CNN EMP,TRASH,49.4%
-bustine.jpg,ResNet18,METAL,71.3%
+bustine.jpg,ResNet18,METAL,71.4%
 carta (2).jpg,CNN Base,PAPER,50.7%
 carta (2).jpg,CNN EMP,PAPER,81.1%
 carta (2).jpg,ResNet18,PAPER,99.7%
 carta (3).jpg,CNN Base,METAL,76.6%
 carta (3).jpg,CNN EMP,PAPER,35.0%
-carta (3).jpg,ResNet18,PAPER,90.2%
+carta (3).jpg,ResNet18,PAPER,90.1%
 carta.jpg,CNN Base,PAPER,49.6%
 carta.jpg,CNN EMP,PAPER,24.9%
-carta.jpg,ResNet18,PAPER,79.3%
+carta.jpg,ResNet18,PAPER,79.2%
 cartone (2).jpg,CNN Base,TRASH,71.4%
 cartone (2).jpg,CNN EMP,TRASH,64.2%
 cartone (2).jpg,ResNet18,CARDBOARD,99.9%
@@ -34,7 +34,7 @@ fazzoletti (2).jpg,CNN EMP,TRASH,89.7%
 fazzoletti (2).jpg,ResNet18,PLASTIC,98.0%
 fazzoletti.jpg,CNN Base,PLASTIC,73.0%
 fazzoletti.jpg,CNN EMP,TRASH,74.9%
-fazzoletti.jpg,ResNet18,TRASH,41.3%
+fazzoletti.jpg,ResNet18,TRASH,41.4%
 latte (2).jpg,CNN Base,GLASS,31.4%
 latte (2).jpg,CNN EMP,PAPER,26.0%
 latte (2).jpg,ResNet18,CARDBOARD,99.7%
@@ -46,7 +46,7 @@ latte (4).jpg,CNN EMP,PLASTIC,68.8%
 latte (4).jpg,ResNet18,PLASTIC,59.4%
 latte.jpg,CNN Base,TRASH,29.0%
 latte.jpg,CNN EMP,METAL,48.7%
-latte.jpg,ResNet18,TRASH,69.3%
+latte.jpg,ResNet18,TRASH,69.5%
 metallo (2).jpg,CNN Base,PAPER,40.6%
 metallo (2).jpg,CNN EMP,TRASH,49.4%
 metallo (2).jpg,ResNet18,METAL,68.2%
@@ -58,10 +58,10 @@ metallo (4).jpg,CNN EMP,GLASS,27.2%
 metallo (4).jpg,ResNet18,GLASS,40.5%
 metallo.jpg,CNN Base,PAPER,30.1%
 metallo.jpg,CNN EMP,METAL,27.0%
-metallo.jpg,ResNet18,METAL,51.1%
+metallo.jpg,ResNet18,METAL,51.2%
 Palloncino1.jpg,CNN Base,PAPER,57.8%
 Palloncino1.jpg,CNN EMP,TRASH,69.1%
-Palloncino1.jpg,ResNet18,GLASS,80.7%
+Palloncino1.jpg,ResNet18,GLASS,80.6%
 Palloncino2.jpg,CNN Base,PAPER,30.7%
 Palloncino2.jpg,CNN EMP,PLASTIC,30.5%
 Palloncino2.jpg,ResNet18,PLASTIC,58.4%
@@ -73,13 +73,13 @@ Plastica (2).jpg,CNN EMP,METAL,42.6%
 Plastica (2).jpg,ResNet18,PLASTIC,91.9%
 Plastica (3).jpg,CNN Base,TRASH,78.8%
 Plastica (3).jpg,CNN EMP,METAL,54.6%
-Plastica (3).jpg,ResNet18,PAPER,71.2%
+Plastica (3).jpg,ResNet18,PAPER,71.1%
 plastica (4).jpg,CNN Base,PLASTIC,47.9%
 plastica (4).jpg,CNN EMP,CARDBOARD,33.7%
 plastica (4).jpg,ResNet18,CARDBOARD,80.2%
 plastica (5).jpg,CNN Base,PLASTIC,85.5%
 plastica (5).jpg,CNN EMP,PLASTIC,57.6%
-plastica (5).jpg,ResNet18,PLASTIC,88.2%
+plastica (5).jpg,ResNet18,PLASTIC,88.3%
 plastica (6).jpg,CNN Base,PLASTIC,69.3%
 plastica (6).jpg,CNN EMP,PLASTIC,58.7%
 plastica (6).jpg,ResNet18,PLASTIC,99.0%
@@ -100,31 +100,31 @@ semi (2).jpg,CNN EMP,GLASS,34.5%
 semi (2).jpg,ResNet18,PAPER,29.9%
 semi.jpg,CNN Base,PLASTIC,85.0%
 semi.jpg,CNN EMP,TRASH,59.7%
-semi.jpg,ResNet18,METAL,69.0%
+semi.jpg,ResNet18,METAL,69.1%
 vetro (2).jpg,CNN Base,PLASTIC,87.6%
 vetro (2).jpg,CNN EMP,PLASTIC,58.8%
 vetro (2).jpg,ResNet18,PLASTIC,94.9%
 vetro (3).jpg,CNN Base,PLASTIC,79.2%
 vetro (3).jpg,CNN EMP,PLASTIC,54.8%
-vetro (3).jpg,ResNet18,GLASS,65.6%
+vetro (3).jpg,ResNet18,GLASS,65.5%
 vetro (4).jpg,CNN Base,PLASTIC,89.0%
 vetro (4).jpg,CNN EMP,PLASTIC,61.7%
-vetro (4).jpg,ResNet18,GLASS,66.6%
+vetro (4).jpg,ResNet18,GLASS,66.5%
 vetro (5).jpg,CNN Base,PLASTIC,85.7%
 vetro (5).jpg,CNN EMP,PLASTIC,71.1%
-vetro (5).jpg,ResNet18,GLASS,97.1%
+vetro (5).jpg,ResNet18,GLASS,97.0%
 vetro (6).jpg,CNN Base,PLASTIC,77.7%
 vetro (6).jpg,CNN EMP,PLASTIC,67.1%
-vetro (6).jpg,ResNet18,GLASS,51.5%
+vetro (6).jpg,ResNet18,GLASS,51.4%
 vetro (7).jpg,CNN Base,PLASTIC,86.6%
 vetro (7).jpg,CNN EMP,PLASTIC,51.0%
-vetro (7).jpg,ResNet18,PLASTIC,66.4%
+vetro (7).jpg,ResNet18,PLASTIC,66.3%
 vetro (8).jpg,CNN Base,PLASTIC,94.2%
 vetro (8).jpg,CNN EMP,PLASTIC,76.4%
-vetro (8).jpg,ResNet18,GLASS,51.7%
+vetro (8).jpg,ResNet18,GLASS,51.6%
 vetro (9).jpg,CNN Base,PLASTIC,75.8%
 vetro (9).jpg,CNN EMP,PLASTIC,69.8%
-vetro (9).jpg,ResNet18,GLASS,96.5%
+vetro (9).jpg,ResNet18,GLASS,96.4%
 vetro.jpg,CNN Base,PLASTIC,81.8%
 vetro.jpg,CNN EMP,PLASTIC,57.4%
-vetro.jpg,ResNet18,GLASS,92.6%
+vetro.jpg,ResNet18,GLASS,92.5%
