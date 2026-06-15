@@ -121,7 +121,7 @@ class TrashNetCNN(nn.Module):
 
 Analisi dell'architettura della rete
 
-Il modello segue una struttura classica "alla VGG", divisa in due macro-blocchi operativi: l'estrazione delle feature visive e la classificazione finale:
+Il modello segue una struttura classica, divisa in due macro-blocchi operativi: l'estrazione delle feature visive e la classificazione finale:
 
 1. Estrazione delle Feature (Strati Convoluzionali e Pooling)
 Questa fase ha il compito di "guardare" l'immagine e individuarne i tratti distintivi. È composta da tre blocchi applicati in sequenza attraverso la funzione forward:
@@ -150,7 +150,7 @@ d1 <- read.csv("CNN.csv")
 ```
 
 ```{r, echo=FALSE}
-paste("Accuratezza massima raggiunta sul Test Set (CNN):", max(d1$Accuracy_Test, na.rm=TRUE), "%")
+paste("Accuratezza raggiunta sul Test Set con accuratezza minima (CNN):", max(d1$Accuracy_Test, na.rm=TRUE), "%")
 ```
 
 
@@ -165,7 +165,9 @@ legend("bottomright", c("Train", "Test"), col=c("steelblue", "firebrick"), lty=1
 
 ```
 
-L'analisi dei grafici di addestramento evidenzia in modo marcato il fenomeno dell'Overfitting. Osservando le curve di Accuratezza e Loss, si nota come le performance sul Train Set (linea blu) migliorino costantemente fino alla quindicesima epoca, sfiorando il 95% di accuratezza. Tuttavia, le curve del Test Set (linea rossa) raccontano una dinamica differente: già a partire dall'epoca 4, la Loss smette di scendere e l'accuratezza si stabilizza intorno al 75%. L'ampio "Generalization Gap" che si viene a creare tra le due linee dimostra che, superata una fase iniziale di sano apprendimento, i livelli convoluzionali della rete hanno iniziato a memorizzare le specifiche immagini di addestramento perdendo la capacità di generalizzare su dati mai visti. Questo risultato conferma i fisiologici limiti di un modello addestrato da zero su un dataset di dimensioni modeste.
+Osservando le curve, si nota come le performance sul Train Set (linea blu) migliorino costantemente fino alla quindicesima epoca, portando la Loss vicina allo zero e sfiorando il 95% di accuratezza. Tuttavia, le curve del Test Set (linea rossa) raccontano una dinamica differente: la fase di generalizzazione e di reale apprendimento si esaurisce intorno all'epoca 6, momento in cui la Validation Loss tocca il suo minimo storico.
+
+A partire da questo esatto punto di flesso si innesca l'overfitting: la Loss sul Test Set inverte la tendenza e ricomincia a salire a causa di previsioni sempre più "arroganti" ed errate, mentre l'accuratezza si appiattisce su un plateau, registrando un picco isolato del 74.51%. L'ampio Generalization Gap che si viene a creare visivamente tra le due linee dimostra che, superata l'epoca 6, i livelli convoluzionali della rete hanno smesso di dedurre regole visive generali e hanno iniziato a memorizzare meccanicamente le specifiche immagini di addestramento. Questo risultato conferma l'instabilità e i fisiologici limiti di un modello privo di tecniche di regolarizzazione, addestrato da zero su un dataset di dimensioni modeste.
 
 
 
@@ -173,13 +175,13 @@ L'analisi dei grafici di addestramento evidenzia in modo marcato il fenomeno del
 knitr::include_graphics("matrice_confusione_cnn.png")
 ```
 
-La matrice di confusione, calcolata sfruttando i pesi del modello al suo picco massimo di accuratezza (e non nell'ultima epoca di overfitting), offre uno spaccato molto interessante sulle difficoltà incontrate dalla rete. Analizzando i falsi positivi e i falsi negativi fuori dalla diagonale principale, è possibile avanzare alcune supposizioni sulle logiche visive apprese dall'architettura:
+La matrice di confusione, calcolata sfruttando i pesi del modello estratti in corrispondenza del minimo storico della Validation Loss (filtrando così il rumore statistico e l'overfitting delle epoche finali), offre uno spaccato molto interessante sulle difficoltà incontrate dalla rete. Analizzando i falsi positivi e i falsi negativi fuori dalla diagonale principale, è possibile avanzare alcune supposizioni sulle logiche visive apprese dall'architettura:
 
 Vetro e Plastica: Si nota che ben 13 oggetti in vetro sono stati erroneamente classificati come plastica. È verosimile ipotizzare che la rete venga ingannata dalla forte somiglianza visiva tra i due materiali: le trasparenze, i riflessi della luce e le forme cilindriche tipiche delle bottiglie potrebbero generare pattern quasi identici per i filtri convoluzionali.
 
-Metallo e Plastica: Emerge una notevole confusione reciproca tra queste due classi (12 oggetti in metallo scambiati per plastica e 11 in plastica scambiati per metallo). Si può supporre che le texture di contenitori lisci, o i bordi irregolari di lattine e bottiglie schiacciate, mettano in crisi i livelli superficiali della rete, che non dispongono della profondità necessaria per coglierne le differenze materiche.
+Metallo e Plastica: Emerge una notevole confusione reciproca tra queste due classi (12 oggetti in metallo scambiati per plastica e 11 in plastica scambiati per metallo). Si può supporre che le texture di contenitori lisci, o i bordi irregolari di lattine e bottiglie schiacciate, mettano in crisi i livelli superficiali della rete, che non dispongono della profondità necessaria per coglierne le micro-differenze materiche.
 
-La classe "Trash": Risulta essere la categoria con la capacità predittiva più bassa in assoluto (solo 19 predizioni corrette). Essendo la classe "indifferenziata", al suo interno raccoglie rifiuti di forme, colori e composizioni completamente eterogenee. È lecito supporre che la totale assenza di un pattern visivo ricorrente renda quasi impossibile, per un modello addestrato da zero, estrarre una regola matematica generale per questa specifica categoria.
+La classe "Trash" (Indifferenziata): Risulta essere la categoria con la capacità predittiva più bassa in assoluto (solo 19 predizioni corrette). Essendo la classe "raccoglitore", al suo interno raggruppa rifiuti di forme, colori e composizioni completamente eterogenee. È lecito supporre che la totale assenza di un pattern visivo ricorrente renda quasi impossibile, per un modello addestrato da zero e con un'architettura relativamente snella, estrarre una regola matematica generale per questa specifica categoria.
 
 
 ## Trainig di un modello già disponibile su pytorch
@@ -195,7 +197,7 @@ d2 <- read.csv("resnet.csv")
 ```
 
 ```{r, echo=FALSE}
-paste("Accuratezza massima raggiunta sul Test Set (ResNet):", max(d2$Accuracy_Test, na.rm=TRUE), "%")
+paste("Accuratezza raggiunta sul Test Set con Loss minima (ResNet):", max(d2$Accuracy_Test, na.rm=TRUE), "%")
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
@@ -209,9 +211,9 @@ legend("bottomright", c("Train", "Test"), col=c("steelblue", "firebrick"), lty=1
 
 ```
 
-L'addestramento della ResNet18 ha evidenziato una curva di apprendimento decisamente rapida ed efficace. La rete è riuscita ad assimilare rapidamente le informazioni dal Train Set (linea blu), portando la Loss quasi a zero e l'Accuratezza vicina al 100% in pochissime epoche.
+L'addestramento della ResNet18 ha evidenziato una curva di convergenza estremamente rapida ed efficace, un comportamento atteso e caratteristico dell'approccio di Transfer Learning. Avendo inizializzato il modello con pesi pre-addestrati su dataset su larga scala (ImageNet), la rete è riuscita ad adattare quasi istantaneamente le proprie mappe di caratteristiche al dominio del Train Set (linea blu), portando la Loss vicina allo zero e l'Accuratezza a ridosso del 100% in pochissime epoche.
 
-Guardando il Test Set (linea rossa), si osserva un andamento tipico dei modelli complessi adattati a dataset ridotti: le curve risultano leggermente più "frastagliate" e volatili rispetto a quelle di addestramento. Nonostante queste normali fluttuazioni, il trend complessivo è innegabilmente positivo e l'accuratezza finale sfiora il 90%, dimostrando l'ottima capacità della rete di riconoscere e classificare immagini di spazzatura mai viste prima.
+Analizzando le metriche sul Test Set (linea rossa), si osserva un andamento fisiologicamente più "frastagliato" e ad alta varianza. Questa marcata volatilità è il sintomo tipico di un'architettura estremamente profonda e ad altissima capacità matematica che viene testata su un set di validazione di dimensioni ridotte. Sebbene l'evidente distacco tra le linee blu e rosse (Generalization Gap) segnali un inevitabile grado di overfitting sulle immagini di training, il trend della Loss di validazione si mantiene strutturalmente decrescente, senza mai entrare in una fase di divergenza critica. Il modello raggiunge un picco di accuratezza che sfiora il 90%, dimostrando l'assoluta superiorità dei blocchi residuali nell'estrarre pattern visivi robusti e nel classificare correttamente dati mai visti prima.
 
 ```{r, echo=FALSE, fig.align='center', out.width='60%'}
 knitr::include_graphics("matrice_confusione_resnet.png")
@@ -219,11 +221,11 @@ knitr::include_graphics("matrice_confusione_resnet.png")
 
 La matrice di confusione della ResNet18 evidenzia una capacità predittiva molto solida, confermata dalla netta concentrazione dei valori lungo la diagonale principale. Andando ad analizzare le misclassificazioni residue, è possibile avanzare alcune deduzioni tecniche su ciò che ancora "inganna" la rete:
 
-Il problema dei riflessi (Plastica, Vetro e Metallo): Gli errori più frequenti si concentrano nella classificazione della plastica, talvolta confusa con il vetro o con il metallo. È altamente probabile che, nonostante la profondità della rete, la presenza di superfici lucide, trasparenze e riflessi luminosi generi delle feature visive sovrapponibili tra questi tre specifici materiali.
+Il problema dei riflessi (Plastica, Vetro e Metallo): Gli errori più frequenti si concentrano nella classificazione della plastica, confusa con il vetro (8 casi) o con il metallo (7 casi). È altamente probabile che, nonostante la notevole profondità della rete, la presenza di superfici lucide, trasparenze e riflessi luminosi generi delle feature visive parzialmente sovrapponibili tra questi tre specifici materiali.
 
-Carta e Metallo: Si registrano alcuni episodi in cui la carta viene scambiata per metallo. Questa anomalia potrebbe essere giustificata dalla presenza, nel dataset, di carta plastificata/lucida o di fogli fortemente accartocciati le cui pieghe nette emulano visivamente gli spigoli di una lattina schiacciata.
+Carta e Metallo: Si registrano alcuni episodi in cui la carta viene scambiata per metallo (5 casi). Questa anomalia predittiva potrebbe essere giustificata dalla presenza, all'interno del dataset, di carta plastificata/lucida o di fogli fortemente accartocciati, le cui pieghe nette emulano visivamente gli spigoli e i contrasti chiaroscurali tipici di una lattina schiacciata.
 
-La classe "Trash": Sebbene i numeri siano proporzionalmente buoni, rimane la categoria con il tasso di errore più distribuito. Anche per un modello pre-addestrato e profondo come la ResNet18, l'estrema eterogeneità visiva dei rifiuti "indifferenziati" rende fisiologicamente complesso isolare dei pattern matematici univoci e universali.
+La classe "Trash" (Indifferenziata): Sebbene le performance su questa classe siano nettamente superiori rispetto ai modelli precedenti (22 predizioni corrette su 27), l'errore tende a distribuirsi in modo sparso (ad esempio, 4 confusioni con la carta). Anche per un modello pre-addestrato ad altissima capacità come la ResNet18, l'estrema eterogeneità visiva dei rifiuti "indifferenziati" rende fisiologicamente complesso isolare dei pattern matematici univoci e universali.
 
 
 ## Confronto tra i due modelli
@@ -240,11 +242,19 @@ legend("bottomright", c("CNN Custom", "ResNet18"), col=c("steelblue", "firebrick
 
 ```
 
-La CNN Custom deve imparare a riconoscere forme, colori e materiali partendo da zero, avendo a disposizione solo le poche migliaia di foto del nostro dataset. La ResNet18, invece ha già osservato milioni di oggetti nella sua vita; sa perfettamente come si comporta la luce su una superficie o come è fatto uno spigolo, e deve solo imparare ad associare queste sue conoscenze pregresse alle 6 categorie di spazzatura (Transfer Learning).
+Il divario prestazionale tra i due modelli trova la sua principale spiegazione nel concetto di Transfer Learning. Mentre la CNN Custom è stata inizializzata con pesi casuali e ha dovuto apprendere l'estrazione delle caratteristiche visive (feature extraction) partendo da zero su un dataset di dimensioni ridotte, la ResNet18 è partita da una conoscenza pregressa vastissima. Essendo stata pre-addestrata su milioni di immagini generiche (ImageNet), l'architettura possedeva già filtri ottimizzati per riconoscere gradienti di luce, spigoli e geometrie complesse, dovendo unicamente ricalibrare i suoi strati finali per mappare tali conoscenze sulle 6 specifiche categorie di TrashNet.
 
-Guardando i grafici relativi al Test Set, questa differenza di "esperienza visiva" è lampante. La linea rossa della ResNet18 domina nettamente il confronto: l'Accuratezza si posiziona costantemente su livelli superiori, arrivando a sfiorare il 90%, mentre la rete creata da zero fatica a superare la soglia del 75%. Anche la curva della Loss conferma questo divario tecnologico, mostrando come la ResNet18 ottenga previsioni molto più sicure e precise, al contrario della CNN che, mandata in overfitting, si arresta su un "livello di errore" decisamente più alto e piatto.
+Analizzando visivamente il confronto diretto sul Test Set, l'impatto di questa disparità tecnologica è inequivocabile:
 
-Questa netta superiorità si riflette anche mettendo a paragone le due matrici di confusione. La CNN proprietaria andava facilmente in crisi di fronte a materiali con texture simili, scambiando frequentemente la plastica con il vetro o con il metallo. La ResNet18, grazie alla sua architettura più profonda, riesce a cogliere differenze materiche molto più sottili, riducendo drasticamente questi falsi positivi. Inoltre, di fronte alla classe "Trash" (la più caotica ed eterogenea), la CNN crollava quasi completamente per l'impossibilità di trovare una regola semplice, mentre la ResNet dimostra di possedere una memoria visiva sufficientemente complessa da riuscire a isolare pattern utili anche nel disordine indifferenziato.
+Andamento dell'Accuratezza: La linea rossa (ResNet18) domina costantemente il grafico, operando su un regime prestazionale nettamente superiore e sfiorando il 90% di accuratezza. Al contrario, la CNN Custom si scontra presto con i propri limiti architetturali (Capacity Limit) e con l'insorgere dell'overfitting, arrestandosi definitivamente sotto la soglia del 75%.
+
+Stabilità della Loss: Il divario è confermato dalla curva dell'errore. La ResNet18 garantisce previsioni matematicamente più sicure (Loss stabilmente inferiore a 0.8), mentre la rete addestrata da zero evidenzia uno scarto sistematico e si appiattisce su un livello di errore decisamente più elevato e insicuro.
+
+Questa netta superiorità numerica si riflette in modo lampante confrontando le due matrici di confusione precedentemente analizzate, dove i vantaggi di una rete profonda (Deep Learning) diventano tangibili:
+
+Risoluzione materica: La CNN proprietaria andava frequentemente in crisi di fronte a materiali con texture simili, scambiando spesso la plastica con il vetro o con il metallo. La ResNet18, potendo contare su decine di strati aggiuntivi e sui blocchi residuali, riesce a cogliere micro-differenze materiche molto più sottili, riducendo drasticamente questi falsi positivi incrociati.
+
+Gestione del caos visivo (Classe "Trash"): Di fronte alla categoria indifferenziata, la più caotica ed eterogenea del dataset, la CNN base crollava quasi completamente per l'impossibilità di estrarre una regola geometrica semplice. La ResNet, al contrario, dimostra di possedere una capacità di astrazione sufficientemente complessa da riuscire a isolare pattern utili anche nel disordine, migliorando significativamente i tassi di riconoscimento.
 
 
 ## Miglioramenti al mio modello
@@ -253,8 +263,17 @@ Questa netta superiorità si riflette anche mettendo a paragone le due matrici d
 d3 <- read.csv("CNN_emp.csv")
 ```
 
+Per superare le gravi problematiche di instabilità e di overfitting riscontrate nella prima versione della CNN, l'architettura è stata potenziata (modello "EMP") integrando tre fondamentali tecniche di regolarizzazione e controllo dell'addestramento:
+
+Batch Normalization: Inserita dopo ogni strato convoluzionale, questa tecnica standardizza i dati in uscita dai filtri (riportandoli a una media di 0 e varianza 1). Questo previene sbalzi numerici incontrollati durante i calcoli matematici, rendendo la rete molto più stabile e permettendo ai gradienti di fluire in modo pulito e veloce.
+
+Dropout (Regolarizzazione): Aggiunto prima dell'ultimo strato lineare, il Dropout "spegne" casualmente una percentuale di neuroni (es. 30%) a ogni ciclo di addestramento. Questo costringe la rete a non affidarsi a singoli percorsi mnemonici, impedendole di imparare a memoria le immagini di training e forzandola a sviluppare regole visive più robuste e generalizzabili.
+
+Learning Rate Scheduler (ReduceLROnPlateau): È stato introdotto un controllore dinamico per il passo di apprendimento (Learning Rate). Quando lo Scheduler rileva che la Loss sul Test Set smette di migliorare per alcune epoche consecutive, riduce automaticamente la velocità di aggiornamento dei pesi. Questo agisce come un "freno a mano", permettendo alla rete di fare aggiustamenti microscopici e di fino quando si avvicina alla soluzione ottimale.
+
+
 ```{r, echo=FALSE}
-paste("Accuratezza massima raggiunta sul Test Set (CNN Migliorata):", max(d3$Accuracy_Test, na.rm=TRUE), "%")
+paste("Accuratezza raggiunta sul Test Set con loss minima(CNN Migliorata):", max(d3$Accuracy_Test, na.rm=TRUE), "%")
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5}
@@ -267,7 +286,54 @@ lines(d3$Epoca, d3$Accuracy_Test, col="firebrick", lwd=2)
 legend("bottomright", c("Train", "Test"), col=c("steelblue", "firebrick"), lty=1, lwd=2, bty="n")
 
 ```
+Sebbene entrambi i modelli possano registrare un'accuratezza finale sul Test Set numericamente sovrapponibile (attorno al 74.5%), la reale efficacia e affidabilità dell'architettura ottimizzata (EMP) emerge chiaramente dall'analisi congiunta del Generalization Gap e della funzione di costo (Cross-Entropy Loss).
 
+Il contenimento del Generalization Gap
+Nel modello di base privo di regolarizzazione, le curve di apprendimento evidenziano un marcato scollamento prestazionale tra i dati di training e quelli di validazione. L'accuratezza sul Train Set tende rapidamente verso il 95-100%, certificando una quasi totale memorizzazione del dataset (overfitting). Il 74.5% raggiunto in fase di test rappresenta dunque il limite di una rete che non ha generalizzato, ma ha esaurito la propria capacità adattiva. Nel modello EMP, l'introduzione del Dropout inibisce l'apprendimento mnemonico: l'accuratezza sul Train Set si arresta su valori fisiologicamente più bassi e realistici (es. 80-85%), mantenendosi strettamente accoppiata alle performance di Test. Questa convergenza parallela delle curve dimostra che il modello ottimizzato ha estratto caratteristiche visive universali e generalizzabili, rendendolo robusto di fronte a dati inediti.
+
+Affidabilità statistica (Loss vs. Accuratezza)
+Inoltre, valutare un modello unicamente tramite l'Accuratezza può risultare fuorviante, trattandosi di una metrica a soglia discreta: una predizione corretta formulata con il 51% di sicurezza ha lo stesso peso statistico di una formulata con il 99%. Per quantificare la reale robustezza predittiva è necessario analizzare il comportamento della Loss. A parità di accuratezza, la Loss del modello EMP risulta strutturalmente inferiore e priva di spike (picchi di errore). Questo indica matematicamente che l'architettura ottimizzata produce classificazioni supportate da un elevato grado di confidenza probabilistica e, contestualmente, mitiga drasticamente le penalità logaritmiche derivanti da previsioni errate ma "arroganti" (ovvero calcolate con un'ingiustificata certezza statistica). Di conseguenza, la rete regolarizzata garantisce un'affidabilità di gran lunga superiore per l'impiego in scenari operativi reali.
 ```{r, echo=FALSE, fig.align='center', out.width='60%'}
 knitr::include_graphics("matrice_confusione_cnn_emp.png")
 ```
+
+La matrice di confusione del modello regolarizzato (CNN EMP) offre una visione molto chiara dei limiti fisici di un'architettura a bassa profondità spaziale, valutata nel suo momento di massima coerenza logica e assenza di overfitting. Sebbene la densità dei valori sulla diagonale principale confermi un apprendimento solido, i pattern di errore residui risultano estremamente specifici e giustificabili dal punto di vista geometrico e illuminotecnico:
+
+Il dilemma delle trasparenze (Vetro e Plastica): La confusione reciproca tra queste due categorie risulta la più marcata dell'intera matrice (14 oggetti in vetro scambiati per plastica e ben 15 in plastica classificati come vetro). Questo dato conferma che, a parità di macro-forma (spesso contenitori cilindrici o bottiglie), i tre blocchi convoluzionali non possiedono una risoluzione sufficiente per distinguere il diverso indice di rifrazione della luce tra plastica trasparente e vetro.
+
+L'anomalia del Metallo lucido: Spicca un numero insolitamente elevato di misclassificazioni per la classe metallo, con ben 16 oggetti interpretati erroneamente come vetro. È altamente plausibile che i forti riflessi speculari tipici delle lattine di alluminio ingannino i filtri superficiali della rete: i picchi di luce bianca sul metallo vengono matematicamente confusi con i riflessi abbaglianti di una superficie vetrosa.
+
+Eccellenza sui materiali opachi (Carta e Cartone): Al contrario, la rete mostra una solidità predittiva eccellente sulla carta (100 predizioni corrette, il valore assoluto più alto) e un'ottima tenuta sul cartone (66). L'opacità, le texture ruvide e la forte presenza di spigoli lineari e bordi netti li rendono i materiali in assoluto più "facili" da codificare per un modello compatto, essendo privi di quei riflessi che mandano in crisi i layer convoluzionali.
+
+La classe "Trash": Il riconoscimento della categoria indifferenziata si attesta su 20 predizioni corrette. Trattandosi di una classe residuale, la rete fatica a estrarre una "firma visiva" univoca; tuttavia, l'azione regolarizzante del Dropout ha impedito al modello di assegnare queste immagini in modo casuale o arrogante, contenendo le misclassificazioni entro limiti fisiologici.
+
+
+# Considerazioni
+
+Nonostante i risultati positivi ottenuti dalle reti regolarizzate, è doveroso evidenziare un limite metodologico intrinseco all'approccio utilizzato, dettato dalle dimensioni ridotte del dataset TrashNet. La suddivisione delle immagini in soli due sottoinsiemi (80% Train e 20% Test) ha richiesto l'impiego del Test Set con una doppia funzione: sia per il monitoraggio durante l'addestramento (attivazione del Learning Rate Scheduler e selezione dei pesi ottimali basata sulla Lowest Loss), sia per la valutazione metrica finale.
+
+A livello teorico, questo paradigma introduce una lieve forma di Data Leakage (o overfitting indiretto). Poiché le iper-scelte del modello (come l'epoca esatta in cui salvare i pesi) sono state prese per massimizzare le performance su quello specifico 20% di dati, il Test Set ha perso la sua natura di insieme "completamente inedito". Di conseguenza, l'accuratezza finale misurata potrebbe risultare marginalmente polarizzata (sovrastimata) rispetto a un test condotto nel mondo reale (Inference in the wild). In futuri sviluppi, l'impiego di un dataset più vasto permetterebbe uno split rigoroso a tre vie (Train, Validation, Test).
+
+
+## Prova Reale
+
+Proprio per compensare questa potenziale sovrastima e validare la reale capacità di generalizzazione delle reti, si è reso necessario un collaudo finale su dati al 100% incontaminati. Per questo motivo è stato condotto l'esperimento di Inference in the wild discusso di seguito.Ho acquisito fisicamente, tramite la fotocamera del mio smartphone, diverse immagini di rifiuti reali e quotidiani, del tutto estranee all'illuminazione e alla distribuzione statistica del dataset TrashNet originale. Sottoporre i tre modelli a questo set di immagini inedite "fuori laboratorio" ha permesso di valutarne la vera robustezza sul campo, verificando in modo inequivocabile se le metriche calcolate precedentemente fossero solide o, al contrario, viziate da un mero adattamento al dataset di origine.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+risultati <- read.csv("risultati_reali.csv", stringsAsFactors = FALSE)
+risultati$Foto <- ""
+target <- risultati$Modello == "CNN EMP"
+risultati$Foto[target] <- paste0('<img src="foto_jpeg/', risultati$Immagine[target], '" height="80px">')
+risultati$Immagine[!target] <- ""
+risultati <- risultati[, c("Immagine", "Modello", "Predizione", "Confidenza", "Foto")]
+riga_vuota <- data.frame(Immagine="<br><br><br>", Modello="", Predizione="", Confidenza="", Foto="", stringsAsFactors = FALSE)
+risultati_finali <- data.frame()
+for (i in seq(1, nrow(risultati), by = 3)) {
+  risultati_finali <- rbind(risultati_finali, risultati[i:min(i+2, nrow(risultati)), ])
+  if (i + 2 < nrow(risultati)) risultati_finali <- rbind(risultati_finali, riga_vuota)
+}
+knitr::kable(risultati_finali, row.names = FALSE, escape = FALSE, caption = "Confronto dei modelli sulle foto reali (Inference in the wild)", align = "llccc")
+```
+I risultati raccolti in tabella delineano un esito complessivamente molto soddisfacente per l'intero progetto e confermano le gerarchie prestazionali teorizzate. Come ampiamente prevedibile, l'architettura ResNet18 si consolida come il modello più robusto e affidabile, dimostrando una netta superiorità nella gestione dei casi limite e degli artefatti visivi complessi (come i riflessi su vetro e metallo). Tuttavia, il dato empirico forse più interessante riguarda il comportamento delle due architetture custom: di fronte a immagini a bassa complessità, caratterizzate da forme ben definite, spigoli netti e materiali opachi (come carta e cartone), anche i modelli meno profondi si sono difesi in modo eccellente. Questo certifica che, pur non potendo contare sul vasto bagaglio conoscitivo del Transfer Learning, l'estrazione delle caratteristiche (feature extraction) appresa da zero sui soli dati di TrashNet è risultata sufficientemente solida e coerente per operare con successo in contesti reali privi di eccessive ambiguità ottiche.

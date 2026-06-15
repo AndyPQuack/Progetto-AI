@@ -11,7 +11,7 @@ def get_data_loaders(data_dir, batch_size=32):
     t_tr = transforms.Compose([transforms.CenterCrop(384), transforms.Resize((224, 224)), transforms.RandomHorizontalFlip(p=0.5), transforms.RandomRotation(degrees=15), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     t_te = transforms.Compose([transforms.CenterCrop(384), transforms.Resize((224, 224)), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     ds = datasets.ImageFolder(root=data_dir)
-    idx_tr, idx_te = train_test_split(list(range(len(ds))), test_size=0.20, stratify=ds.targets, random_state=128)
+    idx_tr, idx_te = train_test_split(list(range(len(ds))), test_size=0.20, stratify=ds.targets, random_state=42)
     ds_tr, ds_te = Subset(datasets.ImageFolder(data_dir, transform=t_tr), idx_tr), Subset(datasets.ImageFolder(data_dir, transform=t_te), idx_te)
     et_tr = [ds.targets[i] for i in idx_tr]
     cc = Counter(et_tr)
@@ -23,12 +23,14 @@ def get_data_loaders(data_dir, batch_size=32):
 
 def main():
     disp = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"\n---> ATTENZIONE: Addestramento in corso su: {disp} <--- \n")
+    
     tr_l, te_l, classi = get_data_loaders('dataset-resized', batch_size=32)
     modello = TrashNetCNN_emp().to(disp)
     criterio = nn.CrossEntropyLoss()
     ottimizzatore = optim.Adam(modello.parameters(), lr=0.001)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(ottimizzatore, mode='min', factor=0.5, patience=2)
-    epoche, record_loss = 40, float('inf')
+    epoche, record_loss = 60, float('inf')
     
     with open('CNN_emp.csv', 'w', newline='') as f:
         csv.writer(f).writerow(['Epoca', 'Loss_Train', 'Accuracy_Train', 'Loss_Test', 'Accuracy_Test'])
@@ -65,7 +67,6 @@ def main():
 
         with open('CNN_emp.csv', 'a', newline='') as f:
             csv.writer(f).writerow([ep + 1, round(m_loss_tr, 4), round(acc_tr, 2), round(m_loss_te, 4), round(acc_te, 2)])
-
 
         if m_loss_te < record_loss:
             record_loss = m_loss_te

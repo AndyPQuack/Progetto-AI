@@ -10,7 +10,7 @@ def get_data_loaders(data_dir, batch_size=64):
     t_tr = transforms.Compose([transforms.CenterCrop(384), transforms.Resize((224, 224)), transforms.RandomHorizontalFlip(p=0.5), transforms.RandomRotation(degrees=15), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     t_te = transforms.Compose([transforms.CenterCrop(384), transforms.Resize((224, 224)), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     ds = datasets.ImageFolder(root=data_dir)
-    idx_tr, idx_te = train_test_split(list(range(len(ds))), test_size=0.20, stratify=ds.targets, random_state=128)
+    idx_tr, idx_te = train_test_split(list(range(len(ds))), test_size=0.20, stratify=ds.targets, random_state=42)
     ds_tr, ds_te = Subset(datasets.ImageFolder(data_dir, transform=t_tr), idx_tr), Subset(datasets.ImageFolder(data_dir, transform=t_te), idx_te)
     et_tr = [ds.targets[i] for i in idx_tr]
     cc = Counter(et_tr)
@@ -22,6 +22,8 @@ def get_data_loaders(data_dir, batch_size=64):
 
 def main():
     disp = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"\n---> ATTENZIONE: Addestramento in corso su: {disp} <--- \n")
+    
     tr_l, te_l, classi = get_data_loaders('dataset-resized', batch_size=64)
     
     modello = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
@@ -69,9 +71,9 @@ def main():
         if m_loss_te < record_loss:
             record_loss = m_loss_te
             print(f"  -> Nuovo record! Loss minima raggiunta: {record_loss:.4f}. Modello salvato.")
-            torch.save(modello.state_dict(), 'modello_trashnet_emp.pth')
+            torch.save(modello.state_dict(), 'modello_resnet.pth')
 
-    modello.load_state_dict(torch.load('modello_resnet18_trashnet.pth', map_location=disp))
+    modello.load_state_dict(torch.load('modello_resnet.pth', map_location=disp))
     conf_matr.salva_matrice(modello, te_l, classi, disp, 'Matrice di Confusione - ResNet18', 'matrice_confusione_resnet.png')
 
 if __name__ == '__main__':
