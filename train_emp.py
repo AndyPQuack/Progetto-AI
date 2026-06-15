@@ -28,7 +28,7 @@ def main():
     criterio = nn.CrossEntropyLoss()
     ottimizzatore = optim.Adam(modello.parameters(), lr=0.001)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(ottimizzatore, mode='min', factor=0.5, patience=2)
-    epoche, record_acc = 35, 0.0
+    epoche, record_loss = 40, float('inf')
     
     with open('CNN_emp.csv', 'w', newline='') as f:
         csv.writer(f).writerow(['Epoca', 'Loss_Train', 'Accuracy_Train', 'Loss_Test', 'Accuracy_Test'])
@@ -66,8 +66,10 @@ def main():
         with open('CNN_emp.csv', 'a', newline='') as f:
             csv.writer(f).writerow([ep + 1, round(m_loss_tr, 4), round(acc_tr, 2), round(m_loss_te, 4), round(acc_te, 2)])
 
-        if acc_te > record_acc:
-            record_acc = acc_te
+
+        if m_loss_te < record_loss:
+            record_loss = m_loss_te
+            print(f"  -> Nuovo record! Loss minima raggiunta: {record_loss:.4f}. Modello salvato.")
             torch.save(modello.state_dict(), 'modello_trashnet_emp.pth')
 
     modello.load_state_dict(torch.load('modello_trashnet_emp.pth', map_location=disp))

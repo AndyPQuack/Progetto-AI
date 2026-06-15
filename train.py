@@ -27,7 +27,7 @@ def main():
     modello = TrashNetCNN().to(disp)
     criterio = nn.CrossEntropyLoss()
     ottimizzatore = optim.Adam(modello.parameters(), lr=0.001)
-    epoche, record_acc = 15, 0.0
+    epoche, record_loss = 15, float('inf')
     
     with open('CNN.csv', 'w', newline='') as f:
         csv.writer(f).writerow(['Epoca', 'Loss_Train', 'Accuracy_Train', 'Loss_Test', 'Accuracy_Test'])
@@ -63,9 +63,11 @@ def main():
         with open('CNN.csv', 'a', newline='') as f:
             csv.writer(f).writerow([ep + 1, round(m_loss_tr, 4), round(acc_tr, 2), round(m_loss_te, 4), round(acc_te, 2)])
 
-        if acc_te > record_acc:
-            record_acc = acc_te
-            torch.save(modello.state_dict(), 'modello_trashnet.pth')
+
+        if m_loss_te < record_loss:
+            record_loss = m_loss_te
+            print(f"  -> Nuovo record! Loss minima raggiunta: {record_loss:.4f}. Modello salvato.")
+            torch.save(modello.state_dict(), 'modello_trashnet_emp.pth')
 
     modello.load_state_dict(torch.load('modello_trashnet.pth', map_location=disp))
     conf_matr.salva_matrice(modello, te_l, classi, disp, 'Matrice di Confusione - CNN Custom', 'matrice_confusione_cnn.png')
